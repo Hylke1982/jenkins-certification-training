@@ -1,0 +1,67 @@
+{
+  "variables": {
+    "cfn_tools_url": "https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz"
+  },
+  "builders": [
+    {
+      "profile": "jenkins-training",
+      "type": "amazon-ebs",
+      "region": "eu-west-1",
+      "source_ami": "ami-785db401",
+      "instance_type": "t2.micro",
+      "ssh_username": "ubuntu",
+      "ami_name": "{{user `ami_prefix`}}-jenkins-training-{{user `mesos_version`}}-hvm-{{isotime | clean_ami_name}}",
+      "ami_description": "Ubuntu Jenkins training",
+      "ami_regions": ["eu-west-1"],
+      "ami_groups": "all",
+      "subnet_id" : "subnet-ed895c89",
+      "associate_public_ip_address": true,
+      "tags": {
+        "os:distribution": "Ubuntu",
+        "os:release": "Zesty"
+      }
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "files/",
+      "destination": "/tmp/"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'vagrant' | {{ .Vars }} sudo -E -S sh '{{ .Path }}'",
+      "inline": [
+        "sleep 30",
+        "apt-add-repository ppa:ansible/ansible",
+        "/usr/bin/apt-get update",
+        "/usr/bin/apt-get -y install ansible"
+      ]
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "files/ansible/playbook.yml",
+      "playbook_dir": "files/ansible",
+      "galaxy_file": "requirements.yml",
+      "extra_arguments": [
+        "--become",
+        "--become-method=sudo",
+        "--become-user=root"
+      ]
+    },
+    {
+      "type": "shell",
+      "only": ["amazon-ebs"],
+      "inline": [
+        "# Install CloudFormation bootstrap tools",
+        "sudo wget -O /root/aws-cfn-bootstrap-latest.tar.gz {{user `cfn_tools_url`}}",
+        "sudo mkdir -p /root/aws-cfn-bootstrap-latest",
+        "sudo tar xvfz /root/aws-cfn-bootstrap-latest.tar.gz --strip-components=1 -C /root/aws-cfn-bootstrap-latest",
+        "sudo easy_install /root/aws-cfn-bootstrap-latest/",
+        "sudo rm -rf /root/aws-cfn-bootstrap-latest /root/aws-cfn-bootstrap-latest.tar.gz"
+      ]
+    }
+
+  ]
+}

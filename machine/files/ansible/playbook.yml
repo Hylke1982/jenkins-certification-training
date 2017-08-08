@@ -1,19 +1,18 @@
 ---
 - name: Jenkins certificate training machine
-  hosts: jenkins
+  hosts: all
   gather_facts: yes
   tasks:
       - name: installing repo for Java 8 in Ubuntu
         apt_repository: repo='ppa:openjdk-r/ppa'
 
-- hosts: jenkins
+- hosts: all
   vars_files:
     - vars/main.yml
     - vars/jenkins.yml
 
   roles:
     - role: geerlingguy.firewall
-    - role: geerlingguy.ntp
     - role: geerlingguy.git
     - role: geerlingguy.java
       when: "ansible_os_family == 'Debian'"

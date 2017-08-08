@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Jenkins training machine
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  JenkinsVPC:
+    Description: VPC For Jenkins training
+    Type: 'AWS::EC2::VPC::Id'
+  JenkinsSubnet:
+    Description: Subnet For Jenkins training
+    Type: 'AWS::EC2::Subnet::Id'
+  JenkinsDomain:
+    Description: Hosted zone Jenkins training
+    Type: 'String'
+    Default: jenkinstraining-codecentric.nl.
+  InstanceNumber:
+    Description: Jenkins instance number
+    Type: String
+  InstanceType:
+    Description: Jenkins EC2 instance type
+    Type: String
+    Default: t2.medium
+    AllowedValues:
+      - t1.micro
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+    ConstraintDescription: must be a valid EC2 instance type.
+  SSHLocation:
+    Description: The IP address range that can be used to SSH to the EC2 instances
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
+
+Resources:
+
+
+  JenkinsInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds:
+        - !Ref JenkinsInstanceSecurityGroup
+      KeyName: !Ref KeyName
+      ImageId: ami-61679018
+      SubnetId: !Ref JenkinsSubnet
+      BlockDeviceMappings:
+        -
+          DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 20
+
+  JenkinsInstanceSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Enable SSH access via port 22
+      VpcId: !Ref JenkinsVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: !Ref SSHLocation
+        - IpProtocol: tcp
+          FromPort: '8080'
+          ToPort: '8080'
+          CidrIp: !Ref SSHLocation
+
+  JenkinsCNameRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Ref JenkinsDomain
+      Type: A
+      TTL: 300
+      Name: !Join [ "", ["jenkins-", !Ref InstanceNumber,".",!Ref JenkinsDomain]]
+      ResourceRecords:
+        - !GetAtt JenkinsInstance.PublicIp
+
+
+Outputs:
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value: !Ref JenkinsInstance
+  AZ:
+    Description: Availability Zone of the newly created EC2 instance
+    Value: !GetAtt
+      - JenkinsInstance
+      - AvailabilityZone
+  PublicDNS:
+    Description: Public DNSName of the newly created EC2 instance
+    Value: !GetAtt
+      - JenkinsInstance
+      - PublicDnsName
