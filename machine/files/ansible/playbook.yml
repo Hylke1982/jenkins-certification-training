@@ -10,8 +10,10 @@
   vars_files:
     - vars/main.yml
     - vars/jenkins.yml
+    - vars/sonar.yml
 
   roles:
+    - role: wtanaka.unzip
     - role: geerlingguy.firewall
     - role: geerlingguy.git
     - role: geerlingguy.java
@@ -19,3 +21,4 @@
       java_packages:
         - openjdk-8-jdk
     - role: geerlingguy.jenkins
+    - role: geerlingguy.sonar

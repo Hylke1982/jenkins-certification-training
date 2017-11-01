@@ -4,3 +4,5 @@
 - src: geerlingguy.git
 - src: geerlingguy.java
 - src: geerlingguy.jenkins
+- src: geerlingguy.sonar
+- src: wtanaka.unzip

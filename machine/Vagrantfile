@@ -2,8 +2,8 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"
 
   config.vm.hostname = "jenkins"
-  config.vm.network :forwarded_port, guest: 8080, host: 38888
-  config.vm.network :forwarded_port, guest: 45451, host: 45451
+  config.vm.network :forwarded_port, guest: 9000, host: 9000, id: 'sonar', protocol: "tcp"
+  config.vm.network :forwarded_port, guest: 8080, host: 38888, id: 'jenkins', protocol: "tcp"
 
 
   config.ssh.insert_key = false
