@@ -4,5 +4,7 @@
 - src: geerlingguy.git
 - src: geerlingguy.java
 - src: geerlingguy.jenkins
-- src: geerlingguy.sonar
+- src: https://github.com/Hylke1982/ansible-role-sonar
+  version: master
+  name: hylke1982.sonar
 - src: wtanaka.unzip

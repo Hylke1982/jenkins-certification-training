@@ -3,8 +3,17 @@
   hosts: all
   gather_facts: yes
   tasks:
-      - name: installing repo for Java 8 in Ubuntu
-        apt_repository: repo='ppa:openjdk-r/ppa'
+    - name: installing repo for Java 8 in Ubuntu
+      apt_repository: repo='ppa:openjdk-r/ppa'
+
+
+
+  pre_tasks:
+    - name: Override varaibles for MySQL (Debian)
+      set_fact:
+        mysql_packages:
+          - mysql-server-5.6
+      when: ansible_os_family == "Debian" and ansible_distribution_version == "14.04"
 
 - hosts: all
   vars_files:
@@ -21,4 +30,9 @@
       java_packages:
         - openjdk-8-jdk
     - role: geerlingguy.jenkins
-    - role: geerlingguy.sonar
+    - role: hylke1982.sonar
+
+  post_tasks:
+    - name: Update CA Java certificates
+      command: /var/lib/dpkg/info/ca-certificates-java.postinst configure
+      become: true

@@ -5,6 +5,9 @@ sonar_mysql_host: localhost
 sonar_mysql_port: "3306"
 sonar_mysql_database: sonar
 
+sonar_download_url: https://sonarsource.bintray.com/Distribution/sonarqube/sonarqube-6.6.zip
+sonar_version_directory: sonarqube-6.6
+
 sonar_mysql_allowed_hosts:
   - 127.0.0.1
   - ::1
